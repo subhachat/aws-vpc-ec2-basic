@@ -27,6 +27,10 @@ resource "aws_route_table_association" "dev_public_assoc_routetbl_subnet01_eu_we
     route_table_id  = "${aws_route_table.dev_public_routetbl_eu_west2_subhachat.id}"
 }
 
+data "http" "myip" {
+  url = "https://api.ipify.org/"
+}
+
 resource "aws_security_group" "dev_sg_ssh_http_allowed_eu_west2_subhachat" {
     vpc_id = "${aws_vpc.dev_vpc_eu_west2_subhachat.id}"
     egress {
@@ -35,9 +39,10 @@ resource "aws_security_group" "dev_sg_ssh_http_allowed_eu_west2_subhachat" {
       protocol              = "-1"
       to_port               = 0
     } 
-    
+    # 88.* (personal device IPv4)
+    # 52.93.*.* (AWS eu-west2 probe IPv4)
     ingress {
-      cidr_blocks           = [ "88.109.91.55/32", "52.93.153.170/32" ]
+      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ] 
       description           = "this rule is for inbound SSH access"
       from_port             = 22
       protocol              = "tcp"
@@ -45,7 +50,7 @@ resource "aws_security_group" "dev_sg_ssh_http_allowed_eu_west2_subhachat" {
     }
 
     ingress {
-      cidr_blocks           = [ "88.109.91.55/32", "52.93.153.170/32" ]
+      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
       description           = "this rule is for inbound HTTP access"
       from_port             = 80
       protocol              = "tcp"
@@ -53,7 +58,7 @@ resource "aws_security_group" "dev_sg_ssh_http_allowed_eu_west2_subhachat" {
     }
 
     ingress {
-      cidr_blocks           = [ "88.109.91.55/32", "52.93.153.170/32" ]
+      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
       description           = "this rule is for inbound HTTPS access"
       from_port             = 443
       protocol              = "tcp"

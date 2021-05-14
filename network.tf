@@ -63,7 +63,23 @@ resource "aws_security_group" "dev_sg_ssh_http_allowed_eu_west2_subhachat" {
       from_port             = 443
       protocol              = "tcp"
       to_port               = 443
-    } 
+    }
+
+    ingress {
+      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
+      description           = "this rule is for inbound HTTP access, alternate port"
+      from_port             = 8080
+      protocol              = "tcp"
+      to_port               = 8080
+    }
+
+    ingress {
+      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
+      description           = "this rule is for inbound HTTPS access, alternate port"
+      from_port             = 8443
+      protocol              = "tcp"
+      to_port               = 8443
+    }
 
     tags = {
         "name"          = "dev_sg_ssh_http_allowed_eu_west2_subhachat"

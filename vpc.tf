@@ -1,23 +1,25 @@
-resource "aws_vpc" "dev_vpc_eu_west2_subhachat" {
+resource "aws_vpc" "dev_web" {
     cidr_block              = "10.0.0.0/24"
     enable_dns_support      = true
     enable_dns_hostnames    = true
     instance_tenancy        = "default"
+
     tags = {
-      "name"        = "dev_vpc_eu_west2_subhachat"
-      "purpose"     = "dev_workspace"
+      "name"        = "dev_web"
+      "purpose"     = "workspace"
       "provisioner" = "terraform"
     }
 }
 
-resource "aws_subnet" "dev_public_subnet01_eu_west2a_subhachat" {
-    vpc_id                  = "${aws_vpc.dev_vpc_eu_west2_subhachat.id}"
+resource "aws_subnet" "public_dev_web_a" {
+    vpc_id                  = "${aws_vpc.dev_web.id}"
     cidr_block              = "10.0.0.0/28"
-    availability_zone       = "eu-west-2a"
+    availability_zone       = "${var.AWS_REGION}a"
     map_public_ip_on_launch = true // this is declaring public subnet 
+
     tags = {
-      "name"        = "dev_public_subnet01_eu_west2a_subhachat"
-      "purpose"     = "dev_workspace"
+      "name"        = "public_dev_web_a"
+      "purpose"     = "workspace"
       "provisioner" = "terraform"
     }
 }

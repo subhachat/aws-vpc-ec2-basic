@@ -1,89 +1,82 @@
-resource "aws_internet_gateway" "dev_igw_eu_west2_subhachat" {
-    vpc_id = "${aws_vpc.dev_vpc_eu_west2_subhachat.id}"
+resource "aws_internet_gateway" "dev_web" {
+    vpc_id = "${aws_vpc.dev_web.id}"
+    
     tags = {
-        "name"          = "dev_igw_eu_west2_subhachat"
-        "purpose"       = "dev_workspace"
+        "name"          = "dev_web"
+        "purpose"       = "workspace"
         "provisioner"   = "terraform"
     }
 }
 
-resource "aws_route_table" "dev_public_routetbl_eu_west2_subhachat" {
-    vpc_id = "${aws_vpc.dev_vpc_eu_west2_subhachat.id}"
+resource "aws_route_table" "public_dev_web" {
+    vpc_id = "${aws_vpc.dev_web.id}"
     
     route {
-      cidr_block                    = "0.0.0.0/0"
-      gateway_id                    = "${aws_internet_gateway.dev_igw_eu_west2_subhachat.id}"
+      cidr_block  = "0.0.0.0/0"
+      gateway_id  = "${aws_internet_gateway.dev_web.id}"
     }
 
     tags = {
-        "name"          = "dev_public_routetbl_eu_west2_subhachat"
-        "purpose"       = "dev_workspace"
+        "name"          = "public_dev_web"
+        "purpose"       = "workspace"
         "provisioner"   = "terraform"
     }
 }
 
-resource "aws_route_table_association" "dev_public_assoc_routetbl_subnet01_eu_west2_subhachat" {
-    subnet_id       = "${aws_subnet.dev_public_subnet01_eu_west2a_subhachat.id}"
-    route_table_id  = "${aws_route_table.dev_public_routetbl_eu_west2_subhachat.id}"
+resource "aws_route_table_association" "dev_web" {
+    subnet_id       = "${aws_subnet.public_dev_web_a.id}"
+    route_table_id  = "${aws_route_table.public_dev_web.id}"
 }
 
 data "http" "myip" {
   url = "https://api.ipify.org/"
 }
 
-resource "aws_security_group" "dev_sg_ssh_http_allowed_eu_west2_subhachat" {
-    vpc_id = "${aws_vpc.dev_vpc_eu_west2_subhachat.id}"
+resource "aws_security_group" "dev_web" {
+    vpc_id      = "${aws_vpc.dev_web.id}"
+    description = "Allow standard & alternate ssh, http, https ports; allow everything outbound"
+
+    ingress {
+      from_port     = 22
+      to_port       = 22
+      protocol      = "tcp"
+      cidr_blocks   = [ "${chomp(data.http.myip.body)}/32" ]  
+    }
+    ingress {
+      from_port     = 80
+      to_port       = 80
+      protocol      = "tcp"
+      cidr_blocks   = [ "${chomp(data.http.myip.body)}/32" ]  
+    }
+    ingress {
+      from_port     = 443
+      to_port       = 443
+      protocol      = "tcp"
+      cidr_blocks   = [ "${chomp(data.http.myip.body)}/32" ]  
+    }
+    ingress {
+      from_port     = 8080
+      to_port       = 8080
+      protocol      = "tcp"
+      cidr_blocks   = [ "${chomp(data.http.myip.body)}/32" ]  
+    }
+    ingress {
+      from_port     = 8443
+      to_port       = 8443
+      protocol      = "tcp"
+      cidr_blocks   = [ "${chomp(data.http.myip.body)}/32" ]  
+    }
+    
     egress {
-      cidr_blocks           = [ "0.0.0.0/0" ]
-      from_port             = 0
-      protocol              = "-1"
-      to_port               = 0
+      from_port     = 0
+      to_port       = 0
+      protocol      = "-1"
+      cidr_blocks   = [ "0.0.0.0/0" ]  
     } 
-    # 88.* (personal device IPv4)
-    # 52.93.*.* (AWS eu-west2 probe IPv4)
-    ingress {
-      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ] 
-      description           = "this rule is for inbound SSH access"
-      from_port             = 22
-      protocol              = "tcp"
-      to_port               = 22
-    }
-
-    ingress {
-      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
-      description           = "this rule is for inbound HTTP access"
-      from_port             = 80
-      protocol              = "tcp"
-      to_port               = 80
-    }
-
-    ingress {
-      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
-      description           = "this rule is for inbound HTTPS access"
-      from_port             = 443
-      protocol              = "tcp"
-      to_port               = 443
-    }
-
-    ingress {
-      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
-      description           = "this rule is for inbound HTTP access, alternate port"
-      from_port             = 8080
-      protocol              = "tcp"
-      to_port               = 8080
-    }
-
-    ingress {
-      cidr_blocks           = [ "${chomp(data.http.myip.body)}/32" ]
-      description           = "this rule is for inbound HTTPS access, alternate port"
-      from_port             = 8443
-      protocol              = "tcp"
-      to_port               = 8443
-    }
 
     tags = {
-        "name"          = "dev_sg_ssh_http_allowed_eu_west2_subhachat"
-        "purpose"       = "dev_workspace"
+        "name"          = "dev_web"
+        "purpose"       = "workspace"
         "provisioner"   = "terraform"
     }
 }

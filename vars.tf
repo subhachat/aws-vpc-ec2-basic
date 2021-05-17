@@ -19,9 +19,9 @@ variable "EC2_USER" {
 }
 
 variable "PRIVATE_KEY_PATH" {
-  default = "dev_ppk_rsa4k_eu_west2_subhachat"
+  default = "dev_ppk_rsa4k"
 }
 
 variable "PUBLIC_KEY_PATH" {
-  default = "dev_ppk_rsa4k_eu_west2_subhachat.pub"
+  default = "dev_ppk_rsa4k.pub"
 }
